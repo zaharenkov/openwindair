@@ -28,6 +28,9 @@ OpenWindAir Smart CO2 sensor
 * Просканируйте в приложение QR код http://openwind.ru/OpenWindAir-demo-QR.png
 * Перед вами полноценное демо.
 
+Руководство пользователя:
+* https://docs.google.com/document/d/1W7GwCrARlAdxi2InBdqVjrY-Bzco8nNTsswMj0b1aSs
+
 Подробнее про датчик OpenWindAir - читайте на сайте http://openwind.ru, вопросы и пожелания отправляйте по адресу hello@openwind.ru
 
 
