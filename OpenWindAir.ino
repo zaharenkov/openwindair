@@ -8,6 +8,7 @@
 #include "version.h"
 #include <FS.h>
 #include <string.h>
+//#include <SPI.h> FIXME, remove or?
 
 //blynk
 #include <ESP8266WiFi.h>
@@ -363,7 +364,6 @@ if (co2_limit_flag){
   
   while (co2Serial.available() > 0 && (unsigned char)co2Serial.peek() != 0xFF){
     co2Serial.read();
-    //Serial.print(".");
   }
 
   memset(response, 0, 9);
@@ -371,15 +371,11 @@ if (co2_limit_flag){
 
   if (response[0] != 0xFF){
     Serial.print("\n\rWrong starting byte from co2 sensor!");
-    Serial.print("\n\rresponse0 (0xFF)");
-    Serial.print(response[0]);
     return -1;
   }
 
   if (response[1] != 0x86){
     Serial.print("\n\rWrong command from co2 sensor!");
-    Serial.print("\n\rresponse1 (0x86)");
-    Serial.print(response[1]);
     return -1;
   }
 
@@ -690,14 +686,13 @@ void setup(){
   // start ticker with 0.5 because we start in AP mode and try to connect
   ticker.attach(0.6, tick);
 
-  //clean FS, for testing
+  // clean FS, for testing
   //SPIFFS.format();
 
-
+  // Check flash size
   String realSize = String(ESP.getFlashChipRealSize());
   String ideSize = String(ESP.getFlashChipSize());
   bool flashCorrectlyConfigured = realSize.equals(ideSize);
-
 
   //todo smth
 
@@ -762,9 +757,12 @@ void setup(){
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
+  
   //reset settings - for testing
   //wifiManager.resetSettings();
 
+  
+  // WiFi credentials will be reseted if button S1 will be pressed during boot
   buttonS1State = digitalRead(buttonS1Pin);
 
   if (buttonS1State == 0){
@@ -804,7 +802,7 @@ void setup(){
       ESP.restart();      
     }
     else{
-      Serial.println("Failed to go online, offline mode acticated");
+      Serial.println("Failed to go online, offline mode activated");
       online = false;
       tone(5,2000,50);    
     }
@@ -870,7 +868,7 @@ void setup(){
      Serial.print("\n\rblynk auth token not set"); 
   }
   
-  Serial.print("\n\rOpenWind is ready!");
+  Serial.print("\n\rOpenWindAir is ready!");
 
   uint16_t mqtt_portnum = strtoul(mqtt_port, NULL, 10);
 
@@ -1061,12 +1059,14 @@ void sendResults(){
       }
    
       int i;
-     // for(i = 0, average_ppm_sum = 0; average_ppm[i] != 0; i++){
-     //   average_ppm_sum+=average_ppm[i];
-    //  } 
-     // if (i){
-     //   average_ppm_sum = average_ppm_sum / i;
-    //  }
+
+      // FIXME: need another average formula
+      // for(i = 0, average_ppm_sum = 0; average_ppm[i] != 0; i++){
+      //   average_ppm_sum+=average_ppm[i];
+      //  } 
+      // if (i){
+      //   average_ppm_sum = average_ppm_sum / i;
+      //  }
       
       
       average_ppm_sum = 0;
@@ -1167,6 +1167,8 @@ void loop(){
            connectBlynk();
            return;
         }
+        
+        //FIXME: add exit after n-unsuccesfull tries.
         Blynk.connect(4000);
         Serial.print(Blynk.connected());
       }
