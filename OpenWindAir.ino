@@ -1,8 +1,13 @@
+/*  OpenWindAir Smart CO2 sensor.
+ *  Based on: ESP8266, MH-Z19, AM2302, Blynk and MQTT.
+ *  Created in Arduino IDE.
+ *  For more details please refer to http://openwind.ru
+*/
+
 //#define BLYNK_PRINT Serial    // Comment this out to disable prints and save space
 #include "version.h"
 #include <FS.h>
 #include <string.h>
-//#include <SPI.h>
 
 //blynk
 #include <ESP8266WiFi.h>
@@ -12,7 +17,10 @@
 #include <TimeLib.h>
 #include <WidgetRTC.h>
 
+// https://github.com/plerup/espsoftwareserial
 #include <SoftwareSerial.h>
+
+// https://github.com/adafruit/DHT-sensor-library
 #include <DHT.h>
 
 // OTA update
@@ -25,10 +33,10 @@
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 
-//LED status
+//LED ticker
 #include <Ticker.h>
 
-//MQTT
+//MQTT library
 #include <PubSubClient.h>
 
 #define BLYNK_GREEN     "#23C48E"
@@ -39,7 +47,6 @@
 
 #define DHTPIN 12
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
-
 
 DHT dht(DHTPIN, DHTTYPE);
 Ticker ticker;
@@ -54,17 +61,16 @@ bool connectBlynk(){
   return _blynkWifiClient.connect(BLYNK_DEFAULT_DOMAIN, BLYNK_DEFAULT_PORT);
 }
 
+// PIN init
 int ledRPin = 13;
 int ledGPin = 14;
 int ledYPin = 16;
-
 int adcPin = A0;
-
 int buttonS1Pin = 10;
 int buttonS2Pin = 0;
-
 int relayPin = 15;
 
+// Variables
 int buttonS1State = 1;
 int buttonS2State = 1;
 
@@ -75,19 +81,19 @@ int ledYState = 1;
 float old_h = 0;
 float old_t = 0;
 float old_f = 0;
+float h = 0;
+float t = 0;
+float f = 0;
 
 int average_ppm[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int average_ppm_sum;
 int average_ppm_index = 0;
 int average_ppm_max = 1100;
+
 int co2_limit = 2; //allowed value of CO2 limit 1, 2, 3, 5 (1k, 2k, 3k, 5k). 2k default
 bool co2_limit_flag = false;
 
 bool temp_correction = true; // default enabled for internal DHT sensor. +15%h -2C -1F
-
-float h;
-float t;
-float f;
 
 char msg_h[10];
 char msg_t[10];
@@ -107,7 +113,7 @@ char mqtt_topic_pub_t[32];
 char mqtt_topic_pub_f[32];
 char mqtt_topic_pub_ppm[32];
 
-char Hostname[32] = "4NAROD";
+char Hostname[32] = "OpenWindAir";
 
 String MAC;
 char mqtt_MAC[14];
@@ -161,7 +167,7 @@ WidgetLED led2(V11);
 WidgetTerminal terminal(V100);
 
 BLYNK_WRITE(V101){
-  int v101 = param.asInt(); // assigning incoming value from pin V1 to a variable
+  int v101 = param.asInt(); // assigning incoming value from pin V10x to a variable
   if (v101 == 1){
     terminal.print("\n\rRestart in 3..2..1..");
     terminal.flush();
@@ -174,7 +180,7 @@ BLYNK_WRITE(V101){
 }
 
 BLYNK_WRITE(V102){
-  int v102 = param.asInt(); // assigning incoming value from pin V1 to a variable
+  int v102 = param.asInt();
   if (v102 == 1){
     terminal.print("\n\rReset WiFi settings in 3..2..1..");
     terminal.flush();
@@ -182,12 +188,12 @@ BLYNK_WRITE(V102){
     digitalWrite(ledRPin, HIGH);
     digitalWrite(ledGPin, HIGH);
     digitalWrite(ledYPin, HIGH);
-    //wifiManager.resetSettings(); //fix me?
+    //wifiManager.resetSettings(); // FIXME
   }
 }
 
 BLYNK_WRITE(V103){
-  int v103 = param.asInt(); // assigning incoming value from pin V1 to a variable
+  int v103 = param.asInt();
   if (v103 == 1){
     terminal.print("\n\rFormat flash in 3..2..1..");
     terminal.flush();
@@ -263,7 +269,7 @@ BLYNK_WRITE(V106){
 }
 
 BLYNK_WRITE(V107){
-  int v107 = param.asInt(); // assigning incoming value from pin V1 to a variable
+  int v107 = param.asInt();
 
   if (v107 != 0){
     temp_correction = true;    
@@ -288,28 +294,27 @@ BLYNK_WRITE(V108){
 
 void tick(){
   //toggle state
-  int state = digitalRead(ledRPin);  // get the current state of GPIO1 pin
-  digitalWrite(ledRPin, !state);     // set pin to the opposite state
+  int state = digitalRead(ledRPin);  // get the current state of Pin
+  digitalWrite(ledRPin, !state);     // set Pin to the opposite state
 }
 
+// toggle LED state. for future use
 void led_toggle_r(){
- //toggle state
-  int state = digitalRead(ledRPin);  // get the current state of GPIO1 pin
-  digitalWrite(ledRPin, !state);     // set pin to the opposite state
+  int state = digitalRead(ledRPin);  // get the current state of Pin
+  digitalWrite(ledRPin, !state);     // set Pin to the opposite state
 }
 
 void led_toggle_g(){
- //toggle state
- int state = digitalRead(ledGPin);  // get the current state of GPIO1 pin
- digitalWrite(ledGPin, !state);     // set pin to the opposite state
+ int state = digitalRead(ledGPin);  // get the current state of Pin
+ digitalWrite(ledGPin, !state);     // set Pin to the opposite state
 }
 
 void led_toggle_y(){
- //toggle state
- int state = digitalRead(ledYPin);  // get the current state of GPIO1 pin
- digitalWrite(ledYPin, !state);     // set pin to the opposite state
+ int state = digitalRead(ledYPin);  // get the current state of Pin
+ digitalWrite(ledYPin, !state);     // set Pin to the opposite state
 }
 
+// WiFiManager voids
 void configModeCallback (WiFiManager *myWiFiManager){
   //gets called when WiFiManager enters configuration mode
   Serial.println("Entered config mode");
@@ -327,6 +332,7 @@ void saveConfigCallback(){  //callback notifying us of the need to save config
 
 }
 
+// Main functions
 int readCO2(){
 
   char response[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; // for answer
@@ -496,7 +502,6 @@ void readMHZ19(){
 }
 
 void readDHT22(){
-
   
   DHTreadOK = false;
   int i = 0;
@@ -641,6 +646,7 @@ void tone(uint8_t _pin, unsigned int frequency, unsigned long duration){
   }
 }
 
+// Setup
 void setup(){
 
   Serial.begin(9600);
@@ -906,6 +912,7 @@ void setup(){
   ESP.wdtDisable();
 }
 
+// Main functions 2
 void reconnect(){
   //Serial.print("\n\rReading D");
   if (mqtt_server[0] != '\0'){
@@ -1142,6 +1149,7 @@ void sendResults(){
   
 }
 
+// LOOP
 void loop(){
 
   if (WiFi.status() == WL_CONNECTED){
