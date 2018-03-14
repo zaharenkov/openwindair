@@ -14,6 +14,21 @@ OpenWindAir Smart CO2 sensor
 * Настройка всех параметров через WiFi.
 * Питание от miniUSB 5V.
 
-Подробнее про датчик OpenWindAir на сайте http://openwind.ru
+Особенности проекта:
+* Автоматический инкремент версии ПО при сборке в Arduino IDE.
+* Возможно активировать ОТА обновление на удаленном устройстве.
+* Реализована отправка показаний на сайт narodmon.ru по протоколу MQTT.
+* Возможен офлайн режим, когда уровень СО2 отображается с помощью трех светодиодов (зеленый, желтый, красный).
+* Настройка параметров WiFi и MQTT осуществляется через Сaptive portal.
+* Изменение пользовательских настроек осуществляеся через приложение Blynk.
+
+Демо:
+* Скачайте прилоение Blynk
+	https://itunes.apple.com/us/app/blynk-control-arduino-raspberry/id808760481?ls=1&mt=8
+	https://play.google.com/store/apps/details?id=cc.blynk
+* Просканируйте в приложение QR код http://openwind.ru/OpenWindAir-demo-QR.png
+* Перед вами полноценное демо.
+
+Подробнее про датчик OpenWindAir на сайте http://openwind.ru вопрсы и пожелания отправляйте на mailto:hello@openwind.ru
 
 
