@@ -24,11 +24,11 @@ OpenWindAir Smart CO2 sensor
 
 Демо:
 * Скачайте прилоение Blynk
-	https://itunes.apple.com/us/app/blynk-control-arduino-raspberry/id808760481?ls=1&mt=8
+	https://itunes.apple.com/us/app/blynk-control-arduino-raspberry/id808760481?ls=1&mt=8 или
 	https://play.google.com/store/apps/details?id=cc.blynk
 * Просканируйте в приложение QR код http://openwind.ru/OpenWindAir-demo-QR.png
 * Перед вами полноценное демо.
 
-Подробнее про датчик OpenWindAir на сайте http://openwind.ru вопрсы и пожелания отправляйте на mailto:hello@openwind.ru
+Подробнее про датчик OpenWindAir на сайте http://openwind.ru вопрсы и пожелания отправляйте на hello@openwind.ru
 
 
