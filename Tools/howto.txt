@@ -1,0 +1,13 @@
+Auto version increment for Arduino IDE
+
+1) Add string to arduino-1.8.5\hardware\platform.txt
+recipe.hooks.sketch.prebuild.0.pattern=D:\arduino-1.8.5\hardware\increment.bat {build.path} {build.source.path} {build.project_name}
+2) Put increment.bat to arduino-1.8.5\hardware\
+3) Add #include "version.h" to your sketch.
+4) Put version.h to sketch folder. 
+5) Get version increment each time you compile your sketch.
+6) Also get backup version of each version of your sketch.
+
+
+
+Thanks to http://codeblog.vurdalakov.net/2017/04/autoincrement-build-number-in-arduino-ide.html 
