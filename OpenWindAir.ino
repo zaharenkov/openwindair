@@ -519,19 +519,19 @@ void readDHT22(){
        if (!isnan(h)){
           h = h + 15;
           old_h = h;}
-       if (!isnan(h)){
+       if (!isnan(t)){
           t = t - 2;
           old_t = t;}
-       if (!isnan(h)){
+       if (!isnan(f)){
           f = f - 1;
           old_f = f;}   
       }
       else{
        if (!isnan(h)){
           old_h = h;}
-       if (!isnan(h)){
+       if (!isnan(t)){
           old_t = t;}
-       if (!isnan(h)){
+       if (!isnan(f)){
           old_f = f;}
         
       }
